@@ -1,0 +1,35 @@
+todo
+
+LOGS
+log searches
+log when a new cafe gets added 
+
+// At the end log the search. Things to log to report on:
+// user location - ip, county, area
+// time of search
+// search keyword
+// search type (nearme, road name, city, etc)
+// maybe time to perform search above ^
+// 
+// it would be nice to do this in the background??
+
+RULES
+send email on added cafe - done 
+
+show custom message on caffe add - 
+
+CODE
+on node save fill out the addess info for the node from the geofield data - done
+
+?
+add link to google maps with directions
+maps.google.com/FROM/TO
+
+?
+add dropdown for range (10 miles, 25, 50, etc) - atm it's hardcoded value and can be 'hacked' in the url
+
+future features
+
+expand map on search page from a button (atm it's static)
+replace googlemaps with leaflet and leaflet routing
+

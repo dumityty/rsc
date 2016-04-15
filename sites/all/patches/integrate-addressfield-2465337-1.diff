@@ -1,0 +1,193 @@
+diff --git a/modules/geolocation_googlemaps/geolocation_googlemaps.css b/modules/geolocation_googlemaps/geolocation_googlemaps.css
+index 531071e..dc85412 100644
+--- a/modules/geolocation_googlemaps/geolocation_googlemaps.css
++++ b/modules/geolocation_googlemaps/geolocation_googlemaps.css
+@@ -11,6 +11,26 @@
+   padding:2px 10px 3px 10px;
+   cursor:pointer;
+   margin:2px 0 0 4px;
++  white-space: nowrap;
++}
++
++.geolocation-addressfield .form-item {
++  margin: 0px;
++}
++
++.geolocation-addressfield-button {
++  background-color:#96BC44;
++  color:#FFF;
++  padding:2px 10px 3px 10px;
++  cursor:pointer;
++  margin:2px 0 0 4px;
++  white-space: nowrap;
++  float: left;
++}
++
++.geolocation-addressfield-help {
++  margin: 2px 0 0 4px;
++  clear: left;
+ }
+ 
+ .field-widget-geolocation-googlemap {
+@@ -19,6 +39,7 @@
+ }
+ 
+ .geolocation-address-geocode:hover,
++.geolocation-addressfield-button:hover,
+ .geolocation-client-location:hover {
+   background-color:#999;
+ }
+@@ -50,8 +71,9 @@
+   outline: 0;
+ }
+ 
+-.geolocation-address .form-type-textfield {
++.geolocation-address .form-type-item .form-type-textfield {
+   float: left;
++  padding-top: 0;
+ }
+ 
+ .geolocation-remove {
+diff --git a/modules/geolocation_googlemaps/geolocation_googlemaps.module b/modules/geolocation_googlemaps/geolocation_googlemaps.module
+index 8507f77..d54f7b2 100644
+--- a/modules/geolocation_googlemaps/geolocation_googlemaps.module
++++ b/modules/geolocation_googlemaps/geolocation_googlemaps.module
+@@ -352,6 +352,35 @@ function geolocation_googlemaps_field_widget_settings_form($field, $instance) {
+     '#default_value' => isset($settings['marker_draggable']) ? $settings['marker_draggable'] : FALSE,
+   );
+ 
++  // Add Support for Addressfield module
++  if (module_exists('addressfield')) {
++    $entity_fields = field_info_instances($instance['entity_type'], $instance['bundle']);
++    $available_fields = array();
++    // Get only the Addressfields
++    foreach ($entity_fields as $field_name => $field_info) {
++      if ($field_info['widget']['module'] == 'addressfield') {
++        $available_fields[$field_name] = $field_info['label'];
++      }
++    }
++
++    $form['addressfield_usefield'] = array(
++      '#type' => 'checkbox',
++      '#title' => t('Use Addressfield?'),
++      '#description' => t('The Addressfield module is installed, do you want to use an Addressfield to map?'),
++      '#default_value' => isset($settings['addressfield_usefield']) ? $settings['addressfield_usefield'] : FALSE,
++    );
++
++    $form['addressfield_whichfield'] = array(
++      '#type' => 'select',
++      '#title' => t('Which field?'),
++      '#descriptoin' => t('Select which Addressfield you want to use'),
++      '#default_value' => isset($settings['addressfield_whichfield']) ? $settings['addressfield_whichfield']: '',
++      '#options' => $available_fields,
++    );
++
++    drupal_add_js(drupal_get_path('module', 'geolocation_googlemaps') . '/geolocation_googlemaps.admin.js', 'file');
++  }
++
+   return $form;
+ }
+ 
+@@ -386,8 +415,36 @@ function geolocation_googlemaps_field_widget_form(&$form, &$form_state, $field,
+   );
+ 
+   switch ($instance['widget']['type']) {
+-
+     case 'geolocation_googlemap':
++      // If the Addressfield module is installed and selected provide button
++      // to use that field data
++      if (isset($instance['widget']['settings']['addressfield_usefield'])
++        and $instance['widget']['settings']['addressfield_usefield'] == 1) {
++        // Get our field name, load the field and get the label.
++        $addressfield = $instance['widget']['settings']['addressfield_whichfield'];
++        $addressfield_instance = field_info_instance($instance['entity_type'], $addressfield, $instance['bundle']);
++        $addressfield_label = $addressfield_instance['label'];
++
++        // Create a field wrapper ABOVE the geolocation field label
++        $element['addressfield'] = array(
++        '#type' => 'item',
++        '#title' => '',
++        '#prefix' => '<div id="geolocation-addressfield-' . $id . '" class="geolocation-addressfield">',
++        '#suffix' => '</div>',
++        );
++
++        $element['addressfield']['geocode_addressfield'] = array(
++          '#prefix' => '<div id="geolocation-addressfield-geocode-' . $id . '" class="geolocation-addressfield-button" addressfield="' . $addressfield . '">',
++          '#suffix' => '</div>',
++          '#markup' => t('Get Location from @addressfield', array('@addressfield' => $addressfield_label)),
++        );
++        $element['addressfield']['help_addressfield'] = array(
++          '#prefix' => '<div id="geolocation-addressfield-help-' . $id . '" class="geolocation-addressfield-help">',
++          '#suffix' => '</div>',
++          '#markup' => t('Use the @addressfield information to map this location.', array('@addressfield' => $addressfield_label)),
++        );
++      }
++
+       $element['address'] = array(
+         '#type' => 'item',
+         '#title' => $element['#title'],
+diff --git a/modules/geolocation_googlemaps/geolocation_googlemaps_widget.js b/modules/geolocation_googlemaps/geolocation_googlemaps_widget.js
+index 6ab93a1..ec7e922 100644
+--- a/modules/geolocation_googlemaps/geolocation_googlemaps_widget.js
++++ b/modules/geolocation_googlemaps/geolocation_googlemaps_widget.js
+@@ -80,6 +80,50 @@
+   }
+ 
+   /**
++   * Get the location from the module:addressfield field as set by the
++   * addressfield attribute on the trigger
++   *
++   * @param i
++   *   the index from the maps array we are working on
++   */
++  Drupal.geolocation.codeAddressfield = function(i) {
++    // get addressfield to use
++    var addressfield = $('#geolocation-addressfield-geocode-' + i).attr('addressfield');
++
++    // get the values from the addressfield fields
++    var addressfields_a = new Array(
++      $("input[name='"+addressfield+"[und][0][thoroughfare]'").val(),
++      $("input[name='"+addressfield+"[und][0][premise]'").val(),
++      $("input[name='"+addressfield+"[und][0][locality]'").val(),
++      $("select[name='"+addressfield+"[und][0][administrative_area]'").val(),
++      $("input[name='"+addressfield+"[und][0][postal_code]'").val(),
++      $("select[name='"+addressfield+"[und][0][country]'").val()
++    );
++
++    //
++    var addressfields_v = new Array();
++    for (var index = 0, len = addressfields_a.length; index < len; index++) {
++      if (addressfields_a[index] !== "") {
++        addressfields_v.push(addressfields_a[index]);
++      }
++    }
++
++    var address = addressfields_v.join();
++
++    geocoder.geocode( { 'address': address }, function(results, status) {
++      if (status == google.maps.GeocoderStatus.OK) {
++        Drupal.geolocation.maps[i].setCenter(results[0].geometry.location);
++        Drupal.geolocation.setMapMarker(results[0].geometry.location, i);
++        Drupal.geolocation.codeLatLng(results[0].geometry.location, i, 'textinput');
++        Drupal.geolocation.setZoom(i, results[0].geometry.location_type);
++      }
++      else {
++        alert(Drupal.t('Geocode was not successful for the following reason: ') + status);
++      }
++    });
++  }
++
++  /**
+    * Set zoom level depending on accuracy (location_type)
+    *
+    * @param location_type
+@@ -210,6 +254,9 @@
+           $('#geolocation-address-geocode-' + i).click(function(e) {
+             Drupal.geolocation.codeAddress(i);
+           });
++          $('#geolocation-addressfield-geocode-' + i).click(function(e) {
++            Drupal.geolocation.codeAddressfield(i);
++          });
+ 
+           $('#geolocation-remove-' + i).click(function(e) {
+             Drupal.geolocation.clearLocation(i);

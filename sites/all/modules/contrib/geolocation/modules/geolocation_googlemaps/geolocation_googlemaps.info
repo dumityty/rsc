@@ -1,0 +1,11 @@
+name = Geolocation Google Maps
+description = Provides Google Maps widgets and formaters for geolocation field.
+package = Geolocation
+core = 7.x
+
+; Information added by Drupal.org packaging script on 2015-11-10
+version = "7.x-1.6+8-dev"
+core = "7.x"
+project = "geolocation"
+datestamp = "1447163352"
+

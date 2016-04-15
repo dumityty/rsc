@@ -1,0 +1,302 @@
+/* color scheme: http://www.colourlovers.com/palette/301154/Influenza */
+
+/* 
+ * GLOBAL 
+ */
+
+.main-container {
+  margin-top: 20px;
+}
+
+.form-control {
+  border-color: #300030;
+}
+
+.form-control:focus {
+  border-color: #601848;
+  box-shadow: none;
+}
+
+/**
+ * MENU
+ */
+header.navbar {
+  background-color: #fff;
+  border: none;
+  padding: 10px 20px;
+}
+
+
+header.navbar .navbar-nav { 
+  text-align: center;
+}
+@media (min-width: 768px) {
+  header.navbar .navbar-nav { 
+    float: right;
+  }
+}
+
+header.navbar .menu .menu-text {
+  margin-right: 20px;
+}
+
+.navbar-default .navbar-nav > li > a {
+  color: #300030; /* dark purple */
+  font-weight: bold;
+}
+.navbar-default .navbar-nav > li > a:hover {
+  color: #C04848; /* orange */
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #C04848;
+  background-color: #fff;
+}
+
+/*mobile menu toggle*/
+.navbar-default .navbar-toggle {
+  background-color: #300030;
+  border-color: transparent;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #C04848;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #fff;
+}
+
+
+/**
+ * SEARCH RESULTS
+ */
+
+.search-info {
+  margin-bottom: 5px;
+}
+
+.kf-box {
+	width: 600px;
+  display: block;
+  overflow: hidden;
+  margin: 0 auto;
+  height: 120px;
+  margin-top: 15px;
+}
+
+.kf-distance {
+	float: left;
+	width: 15%;
+	padding: 25px 30px;
+	border-right: solid 1px #333;
+	text-align: center;
+
+  font-weight: bold;
+  color: #C04848;
+}
+
+.kf-distance span.glyphicon {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.kf-info {
+	float: left;
+	width: 85%;
+	padding: 10px 30px;
+}
+
+.kf-info h3 {
+	margin-top: 10px;
+}
+
+.kf-info .kf-meta {
+  float: right;
+}
+.kf-info .kf-meta a {
+  color: #C04848;
+}
+
+/**
+ * SEARCH PAGE
+ */
+
+.page-search-page form.search-form .form-item {
+  display: inline-block;
+  width: 300px;
+  margin: 0;
+}
+
+.page-search-page form.search-form .form-item input {
+  padding: 20px 15px;
+}
+
+@media (min-width: 768px) {
+	.page-search-page .main-container {
+		width: 760px;
+	}
+  .page-search-page form.search-form .form-item {
+    width: 510px;
+  }
+}
+
+.page-search-page form.search-form {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.page-search-page form.search-form button {
+  margin-top: -34px;
+  background-color: #300030;
+  border-color: transparent;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+
+  padding: 10px 15px;
+}
+.page-search-page form.search-form button:hover {
+  background-color: #C04848;
+}
+
+.page-search-page form.search-form .form-autocomplete .input-group-addon {
+  display: none;
+}
+
+/**
+ * ADD CAFFE
+ */
+
+.page-add-cafe form {
+  margin-bottom: 50px;
+}
+
+.page-add-cafe .form-group {
+  margin-bottom: 30px;
+}
+
+@media (min-width: 768px) {
+	.page-add-cafe .main-container {
+		width: 760px;
+	}
+}
+
+.page-add-cafe .field-name-field-kf-geolocation-maps {
+	overflow: hidden;
+}
+
+
+/* experimental */
+.page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field input {
+	float: left;
+	width: 100%;
+}
+.page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field .geolocation-address-geocode {
+  float: left;
+  clear: both;
+  width: 95px;
+  height: 30px;
+  line-height: 25px;
+  background-color: #8a9b0f;
+}
+.page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field .geolocation-address-geocode:hover {
+  background-color: #b3c913;
+}
+.page-add-cafe .geolocation-client-location {
+  background-color: #8a9b0f;
+}
+.page-add-cafe .geolocation-client-location:hover {
+  background-color: #b3c913;
+}
+
+.page-add-cafe .geolocation-remove span:hover {
+  background-color: #f22;
+}
+
+.page-add-cafe .geolocation-help {
+  clear: both;
+}
+
+.page-add-cafe .form-actions {
+  text-align: center;
+}
+.page-add-cafe .form-actions button {
+  background-color: #8a9b0f;
+  border-color: #8a9b0f;
+}
+.page-add-cafe .form-actions button:hover {
+  background-color: #b3c913;
+}
+@media (min-width: 768px) {
+  .page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field input {
+    width: 85%;
+  }
+  .page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field .geolocation-address-geocode {
+    float: right;
+    clear: none;
+  }
+}
+
+.kf-add-info {
+  margin-bottom: 20px;
+	margin-top: 20px;
+}
+
+
+/*.search-form {
+	overflow: hidden;
+  width: 300px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+
+.search-form .form-item-search {
+	width: 300px;
+  float: left;
+}
+
+.search-form .form-item-search input {
+  height: 50px;
+  background: #2b303b;
+  border: none;
+  font-size: 10pt;
+  color: #fff;
+  padding-left: 15px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.search-form .form-submit {
+	-webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -moz-border-radius-topright: 5px;
+  -moz-border-radius-bottomright: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+ 
+  border: none;
+  background: #232833;
+  height: 50px;
+  width: 50px;
+  color: #4f5b66;
+  opacity: 1;
+  font-size: 10pt;
+ 
+  -webkit-transition: all .55s ease;
+  -moz-transition: all .55s ease;
+  -ms-transition: all .55s ease;
+  -o-transition: all .55s ease;
+  transition: all .55s ease;
+}
+
+.search-form:hover .form-submit,
+.search-form:active .form-submit,
+.search-form:focus .form-submit {
+	outline: none;
+  opacity: 1;
+  margin-left: -50px;
+}

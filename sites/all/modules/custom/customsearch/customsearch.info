@@ -1,0 +1,4 @@
+name = Search
+description = Search.
+package = RSC
+core = 7.x

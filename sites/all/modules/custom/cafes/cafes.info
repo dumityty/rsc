@@ -1,0 +1,4 @@
+name = Cafes.
+description = Any bits and bobs needed to customise cafes.
+package = RSC
+core = 7.x

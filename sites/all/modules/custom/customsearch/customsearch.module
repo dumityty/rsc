@@ -1,0 +1,320 @@
+<?php
+
+/**
+ * Main search functionality.
+ *
+ * 
+ * @todo
+ * Move themeing/page output into templates or theme hooks.
+ * https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme/7
+ * https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_theme/7
+ * https://api.drupal.org/api/drupal/modules%21system%21theme.api.php/group/themeable/7
+ * 
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function customsearch_menu() {
+  $items['search'] = array(
+    'title' => 'Search',
+    'description' => 'Search.',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'customsearch_search_wrapper',
+    'page arguments' => array(1,2),
+  );
+  $items['s'] = array(
+    'title' => 'Search',
+    'description' => 'Search.',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'customsearch_search_wrapper',
+    'page arguments' => array(1,2),
+  );
+  $items['nearme'] = array(
+    'title' => 'Near me',
+    'description' => 'Near me.',
+    'access callback' => TRUE,
+    'page callback' => 'customesearch_nearme',
+    'page arguments' => array(1),
+  );
+
+  $items['search-page'] = array(
+    'title' => 'Search',
+    'description' => 'Search homepage.',
+    'access callback' => TRUE,
+    'page callback' => 'customsearch_search_page',
+    // 'page arguments' => array('customsearch_search_form'),
+  );
+  $items['search-autocomplete'] = array(
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'customsearch_search_autocomplete',
+    'file' => 'customsearch.autocomplete.inc',
+  );
+
+  return $items;
+}
+
+function customsearch_search_page() {
+
+  $banner = array(
+    "#markup" => "
+      <div class='jumbotron'>
+        <h2>Welcome to the <span class='rsc'>roadsidecafe</span> website!</h2>
+        <p>Easily search for a cafe on the side of the road anywhere in the UK.</p>
+        <p>Find out <a class='btn btn-success' href='about' role='button'>more</a> about the site or begin your search below.</p>
+      </div>
+    ",
+  );
+
+  $search_form = array(
+    "#markup" => drupal_render(drupal_get_form('customsearch_search_form')),
+  );
+
+  $output = array($banner, $search_form);
+
+  // customsearch_search_autocomplete('sg');
+
+  return $output;
+}
+
+function customsearch_search_form($form, &$form_state) {
+  $form['#attributes'] = array('class' => array('search-form'));
+
+  $form['search'] = array(
+    '#type' => 'textfield',
+    '#size' => 60,
+    '#required' => FALSE,
+    '#attributes' => array(
+      'placeholder' => 'Search...',
+    ),
+    '#autocomplete_path' => 'search-autocomplete',
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => '<span class="glyphicon glyphicon-search" aria-hidden="true"></span>',
+  );
+
+  // dpm($form);
+
+  return $form;
+}
+
+/**
+ * Submit handler for the search form.
+ *
+ * Main functionality is to figure out the type of search and then 
+ * redirect to the actual search page to get the results. 
+ * @param  [type]
+ * @param  [type]
+ * @return [type]
+ */
+function customsearch_search_form_submit($form, &$form_state) {
+  // dpm($form,'form');
+  // dpm($form_state,'form_state');
+
+  drupal_goto('/s/' . $form_state['values']['search']);
+}
+ 
+/**
+ * Call main search function to look at specified location.
+ *
+ * @todo
+ * Will need to think of a way to tell what the search term is refering to.
+ * ie. search for road name, search for city, search for postcode, try to decode it, etc.
+ * 
+ * The initial idea is to add another parameter in the url to specify the type of search,
+ * then if the parameter is not in the url try and 'decipher' it.
+ * This way you can either be really specific and save compute time, or be more vague
+ * but have to do all the calculation to figure out what you are searching for.
+ * 
+ * @param  [type]
+ * @return [type]
+ */
+function customsearch_search_wrapper($search, $distance) {
+  if (empty($distance)) {
+    $distance = '25';
+  }
+  return customsearch_search('search', $search, $distance);
+}
+
+/**
+ * Call main search function to look near user.
+ * @param  string
+ * @return [type]
+ */
+function customesearch_nearme($distance = '10') {
+  if (empty($distance)) {
+    $distance = '10';
+  }
+  return customsearch_search('nearme', '', $distance);
+}
+
+/**
+ * The main search functionality.
+ * Gets visitor location, determines whether a search by location or proximity, 
+ * then set the exposed filters on the view and get the view result.
+ *
+ * Outputs the map with the results, and a list of results.
+ *
+ * @todo 
+ * handle no results
+ * 
+ * @param  [type]
+ * @param  string
+ * @param  string
+ * @return [type]
+ */
+function customsearch_search($type, $search = '', $distance = '10') {
+  // Save the original distance in miles for use in info text.
+  $distance_miles = $distance;
+
+  // The ipgeoloc functions take kilometers, and all values passed by users
+  // should be assumed to be in miles.
+  $distance = round($distance / 0.62,2);
+
+  $view = views_get_view('search');
+  $view->set_display('page');
+
+  // do proximity by searched place (if postcode, road not matched)
+  // do proximity by ip_geoloc_get_visitor_location - filter by closest results
+  
+  $user_location = ip_geoloc_get_visitor_location();
+  // dpm($user_location, 'user');
+  
+  // If nearme page or search term is left empty.
+  if ( ($type == 'nearme') || empty($search) ) {
+    if (isset($user_location['latitude']) && isset($user_location['longitude'])) {
+      $exposed_filters = array(
+        'field_kf_geolocation_maps_distance' => array(
+          'latitude' => $user_location['latitude'],
+          'longitude' => $user_location['longitude'],
+          'search_distance' => $distance,
+        ),
+      );
+    }
+    else {
+      // The user's location could not be found so can't search 'nearme'...
+      // Maybe redirect the user to the search page?
+      drupal_set_message(t('Your location could not be found. Why not try and search for a location?'), 'status', FALSE);
+      drupal_goto('/');
+    }
+  }
+  else {
+    $exposed_filters = array(
+      'field_kf_road_name_value' => $search,
+      'field_kf_address_postal_code' => $search,
+    );
+
+    // Add this search if you want to add proximity search as well.
+    // return only points that are within x miles
+    // If we don't add this filter then by default it will return ALL results
+    // that match the above filters (road, postcode, etc)
+
+    // ...could be used when doing searches like 'a10 within 3 miles'...
+    // but for start just use a dropdown somewhere?
+
+    if (!empty($distance)) {
+      // Sometimes the user location array might come empty if cannot pinpoint user...
+      if (isset($user_location['latitude']) && isset($user_location['longitude'])) {
+        $exposed_filters['field_kf_geolocation_maps_distance'] = array(
+          'latitude' => $user_location['latitude'],
+          'longitude' => $user_location['longitude'],
+          'search_distance' => $distance,
+        );
+      }
+    }
+  }
+
+
+  // Only way to pass exposed filters - views_get_view_result only works with 
+  // contextual filter.
+  // Can't use contextual filters as proximity filter only works with normal filters.
+  $view->set_exposed_input($exposed_filters);
+  
+  $view->pre_execute();
+  $view->execute();
+  
+  $result = $view->result;
+  
+  // dpm($result, 'result');
+  // dpm($view,'view');
+  
+  // Look at refactoring this and use hook_theme maybe?
+
+  // ip_geoloc_output_map_multi_location($locations, $div_id, $map_options,$map_style, $marker_color, $visitor_marker, $center_option, $center_latlng, $visitor_location_gps)
+  $cafes = array();
+
+  // $cafes[] = array(
+  //   "#markup" => "Map - current",
+  // );
+
+  $cafes_markers = array();
+
+  foreach ($result as $key => $cafe) {
+
+    $kf_location = array(
+      'latitude' => $cafe->field_field_kf_geolocation_maps_2[0]['raw']['lat'],
+      'longitude' => $cafe->field_field_kf_geolocation_maps_2[0]['raw']['lng'],
+    );
+    $distance_to_user = round((ip_geoloc_distance($kf_location)/1000)*0.62,2);
+
+    // <div class='kf-map'>" . drupal_render($cafe->field_field_kf_geolocation_maps_2) . "</div>
+    $cafe_markup = array(
+      "#type" => "markup",
+      "#markup" => "
+      <div class='kf-box'>
+        <div class='kf-distance'><span class='glyphicon glyphicon-map-marker'></span>" . $distance_to_user . " miles</div>
+        <div class='kf-info'>
+          <div class='kf-title'>
+            <h3>" . $cafe->node_title . "</h3>
+          </div>
+          <div class='kf-road'>" . $cafe->field_field_kf_road_name[0]['raw']['value'] . "</div>
+          <div class='kf-postcode'>" . $cafe->field_data_field_kf_address_field_kf_address_postal_code . "</div>
+          <div class='kf-meta'><a href='/report/" . $cafe->nid . "'>report</a></div>
+        </div>
+      </div>",
+    );
+
+    $cafe_marker = new stdClass();
+    $cafe_marker->latitude = $kf_location['latitude'];
+    $cafe_marker->longitude = $kf_location['longitude'];
+    $cafe_marker->balloon_text = $cafe->node_title;
+    $cafe_marker->marker_color = 'red';
+    $cafe_marker->id = $cafe->nid;
+    $cafe_marker->open = FALSE;
+
+    $cafes_markers[] = $cafe_marker;
+
+    $cafes[] = $cafe_markup;
+  }
+
+  // Create the map with the results.
+  $map = array(
+    "#markup" => ip_geoloc_output_map_multi_location($cafes_markers, 'ip-geoloc-map-multi-locations-cafes', '{"zoom":8}','height:300px','red','418E8E',6,array(0=>0),1),
+  );
+
+  // Depending of type of search have slightly different results text.
+  $plural = (count($cafes_markers) > 1) ? TRUE : FALSE;
+  $results_info = array(
+    "#markup" => "<div class='search-info'>There " . ($plural ? "are" : "is") . "<b> " . count($cafes_markers) . "</b> cafe" . ($plural ? "s" : "") . " within <b>" . $distance_miles . "</b> miles of your current location (" . $user_location['locality'] . ").</div>",
+  );
+
+  // Put the map on top of the whole markup.
+  array_unshift($cafes, $map);
+  array_unshift($cafes, $results_info);
+
+  // At the end log the search. Things to log to report on:
+  // user location - ip, county, area
+  // time of search
+  // search keyword
+  // search type (nearme, road name, city, etc)
+  // maybe time to perform search above ^
+  // 
+  // it would be nice to do this in the background??
+
+  return $cafes;
+}

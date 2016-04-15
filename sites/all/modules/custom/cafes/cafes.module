@@ -1,0 +1,147 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function cafes_menu() {
+  $items['add-cafe'] = array(
+    'title' => 'Add cafe',
+    'description' => 'Add cafe.',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'cafes_add_cafe',
+  );
+
+  $items['report/%'] = array(
+    'title' => 'Report cafe',
+    'description' => 'Report cafe.',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => 'cafes_report_cafe',
+    'page arguments' => array(1),
+  );
+
+  return $items;
+}
+
+function cafes_add_cafe() {
+	module_load_include('inc', 'node', 'node.pages');
+
+	// $output = array(
+ //    "#markup" => "<div class='kf-add'>" . drupal_render(node_add('cafes')) . "</div>",
+ //  );
+
+	$output = array(
+    "#markup" => "<div class='kf-add-info'><p>You can submit new cafes here. They will be reviewed and published on the site.</p><p></p></div>" . drupal_render(node_add('cafes')),
+  );
+
+  // $output = node_add('cafes');
+
+	// $output = drupal_render($form);
+
+	return $output;
+}
+
+/**
+ * Change label for title and remove address field from form.
+ * @param  [type]
+ * @param  [type]
+ * @return [type]
+ */
+function cafes_form_cafes_node_form_alter(&$form, &$form_state) {
+	// $form['title']['#title'] = 'Cafe name';
+	if (user_is_anonymous()) {
+		$form['field_kf_address']['#access'] = FALSE;
+	}
+
+	if (empty($form['field_kf_geolocation_maps']['und'][0]['lat']['#default_value']) && empty($form['field_kf_geolocation_maps']['und'][0]['lng']['#default_value'])) {
+		$user_location = ip_geoloc_get_visitor_location();
+  	$form['field_kf_geolocation_maps']['und'][0]['lat']['#default_value'] = $user_location['latitude'];
+		$form['field_kf_geolocation_maps']['und'][0]['lng']['#default_value'] = $user_location['longitude'];
+	}
+
+}
+
+function cafes_node_submit($node, $form, &$form_state) {
+	// dpm($node, 'node');
+	// dpm($form_state, 'fs');
+
+	if ($node->type == 'cafes') {
+
+		$address = ip_geoloc_reverse_geocode($form_state['values']['field_kf_geolocation_maps']['und'][0]['lat'], $form_state['values']['field_kf_geolocation_maps']['und'][0]['lng']);
+		
+		$addressfield = _cafes_get_google_address($address);
+			
+		$node->field_kf_address['und'][0]['thoroughfare'] = $addressfield['address'];
+		$node->field_kf_address['und'][0]['locality'] = $addressfield['town'];
+		$node->field_kf_address['und'][0]['postal_code'] = $addressfield['postal_code'];
+
+		if (user_is_anonymous()) {
+			// Don't publish the node if anonymous
+			// $node->status = 0;
+			
+			$form_state['redirect'] = '/';
+		}
+		// geocode the gmaps field and add it to the address field.
+	}
+
+}
+
+function _cafes_get_google_address($address) {
+	$addressfield = array();
+	foreach ($address['address_components'] as $key => $component) {
+		foreach ($component['types'] as $key => $value) {
+			switch ($value) {
+				case 'street_number':
+					$addressfield['street_number'] = $component['long_name'];
+					break;
+				case 'route':
+					$addressfield['street'] = $component['long_name'];
+					break;
+				case 'locality':
+					$addressfield['locality'] = $component['long_name'];
+					break;
+				case 'postal_town':
+					$addressfield['postal_town'] = $component['long_name'];
+					break;
+				case 'postal_code':
+					$addressfield['postal_code'] = $component['long_name'];
+					break;
+			}
+ 		}
+	}
+	if (isset($addressfield['street_number'])) {
+		$addressfield['address'] = $addressfield['street_number'] . ' ' . $addressfield['street'];
+	}
+	else {
+		$addressfield['address'] = $addressfield['street'];
+	}	
+	if (isset($addressfield['locality'])) {
+		$addressfield['town'] = $addressfield['locality'];
+	}
+	else {
+		$addressfield['town'] = $addressfield['postal_town'];
+	}
+
+	return $addressfield;
+}
+
+function cafes_report_cafe($cafe_id) {
+	$cafe = node_load($cafe_id);
+	
+	$message = message_create('report');
+
+	$wrapper = entity_metadata_wrapper('message', $message);
+  $wrapper->field_message_cafe->set($cafe);
+  $wrapper->save();
+
+	drupal_set_message('The cafe has been reported and the site administrator notified.');
+	drupal_goto('/');
+}
+
+// alter the form submit
+// redirect user to homepage on submission
+// make the node unpublished by default
+// will need to trigger a rule with email
+
+
