@@ -31,8 +31,9 @@ function cafes_add_cafe() {
  //    "#markup" => "<div class='kf-add'>" . drupal_render(node_add('cafes')) . "</div>",
  //  );
 
+  $add_cafe_form = node_add('cafes');
 	$output = array(
-    "#markup" => "<div class='kf-add-info'><p>You can submit new cafes here. They will be reviewed and published on the site.</p><p></p></div>" . drupal_render(node_add('cafes')),
+    "#markup" => "<div class='kf-add-info'><p>You can submit new cafes here. They will be reviewed and published on the site. Please try to provide as much information as possible.</p><p></p></div>" . drupal_render($add_cafe_form),
   );
 
   // $output = node_add('cafes');
@@ -69,9 +70,9 @@ function cafes_node_submit($node, $form, &$form_state) {
 	if ($node->type == 'cafes') {
 
 		$address = ip_geoloc_reverse_geocode($form_state['values']['field_kf_geolocation_maps']['und'][0]['lat'], $form_state['values']['field_kf_geolocation_maps']['und'][0]['lng']);
-		
+
 		$addressfield = _cafes_get_google_address($address);
-			
+
 		$node->field_kf_address['und'][0]['thoroughfare'] = $addressfield['address'];
 		$node->field_kf_address['und'][0]['locality'] = $addressfield['town'];
 		$node->field_kf_address['und'][0]['postal_code'] = $addressfield['postal_code'];
@@ -79,7 +80,7 @@ function cafes_node_submit($node, $form, &$form_state) {
 		if (user_is_anonymous()) {
 			// Don't publish the node if anonymous
 			// $node->status = 0;
-			
+
 			$form_state['redirect'] = '/';
 		}
 		// geocode the gmaps field and add it to the address field.
@@ -115,7 +116,7 @@ function _cafes_get_google_address($address) {
 	}
 	else {
 		$addressfield['address'] = $addressfield['street'];
-	}	
+	}
 	if (isset($addressfield['locality'])) {
 		$addressfield['town'] = $addressfield['locality'];
 	}
@@ -128,7 +129,7 @@ function _cafes_get_google_address($address) {
 
 function cafes_report_cafe($cafe_id) {
 	$cafe = node_load($cafe_id);
-	
+
 	$message = message_create('report');
 
 	$wrapper = entity_metadata_wrapper('message', $message);

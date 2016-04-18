@@ -2,7 +2,7 @@ todo
 
 LOGS
 log searches
-log when a new cafe gets added 
+log when a new cafe gets added
 
 // At the end log the search. Things to log to report on:
 // user location - ip, county, area
@@ -10,13 +10,13 @@ log when a new cafe gets added
 // search keyword
 // search type (nearme, road name, city, etc)
 // maybe time to perform search above ^
-// 
+//
 // it would be nice to do this in the background??
 
 RULES
-send email on added cafe - done 
+send email on added cafe - done
 
-show custom message on caffe add - 
+show custom message on caffe add -
 
 CODE
 on node save fill out the addess info for the node from the geofield data - done
@@ -33,3 +33,8 @@ future features
 expand map on search page from a button (atm it's static)
 replace googlemaps with leaflet and leaflet routing
 
+add sorting features for results
+
+extend the cafe reporting tool with a form for more details on why it's reported
+
+remove cafe from search results immediately after it's been reported.
