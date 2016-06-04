@@ -31,15 +31,6 @@
  *     used; applies only when $visitor_marker is set or $center_opiton == 2;
  *     if FALSE $center_latlng is used
  */
-// dpm($locations);
-// dpm($div_id);
-// dpm($map_options);
-// dpm($map_style);
-// dpm($marker_color);
-// dpm($visitor_marker);
-// dpm($center_option);
-// dpm($center_latlng);
-// dpm($visitor_location_gps);
 ?>
 <div class="ip-geoloc-map view-based-map">
   <?php echo ip_geoloc_output_map_multi_location($locations, $div_id, $map_options,

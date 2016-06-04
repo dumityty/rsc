@@ -1,7 +1,0 @@
---- geolocation_proximity.info
-+++ geolocation_proximity.info
-@@ -8,3 +8,4 @@
- 
- files[] = handlers/geolocation_proximity_views_handler_filter_distance.inc
- files[] = handlers/geolocation_proximity_views_handler_field_distance.inc
-+files[] = handlers/geolocation_proximity_views_handler_sort_distance.inc

@@ -33,6 +33,9 @@ function geolocation_proximity_field_views_data_alter(&$result, $field, $module)
           // This is use by the table display plugin.
           'click sortable' => TRUE,
         ),
+        'sort' => array(
+          'handler' => 'geolocation_proximity_views_handler_sort_distance',
+        ),
       );
     }
   }

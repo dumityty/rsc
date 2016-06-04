@@ -17,9 +17,20 @@
   box-shadow: none;
 }
 
+
 /**
  * MENU
  */
+
+header .logo {
+  margin: 0;
+  padding: 0;
+}
+
+header .logo img {
+  height: 50px;
+}
+
 header.navbar {
   background-color: #fff;
   border: none;

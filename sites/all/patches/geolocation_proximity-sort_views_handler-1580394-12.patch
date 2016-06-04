@@ -1,12 +1,3 @@
-diff --git a/geolocation_proximity.info b/geolocation_proximity.info
-index dfa1b95..d5dae36 100644
---- a/geolocation_proximity.info
-+++ b/geolocation_proximity.info
-@@ -8,3 +8,4 @@ dependencies[] = views
- 
- files[] = handlers/geolocation_proximity_views_handler_filter_distance.inc
- files[] = handlers/geolocation_proximity_views_handler_field_distance.inc
-+files[] = handlers/geolocation_proximity_views_handler_sort_distance.inc
 diff --git a/geolocation_proximity.views.inc b/geolocation_proximity.views.inc
 index cd4e7f4..ed78603 100644
 --- a/geolocation_proximity.views.inc
@@ -18,7 +9,7 @@ index cd4e7f4..ed78603 100644
 +        'sort' => array(
 +          'handler' => 'geolocation_proximity_views_handler_sort_distance',
 +        ),
-       );
+   );
      }
    }
 diff --git a/handlers/geolocation_proximity_views_handler_sort_distance.inc b/handlers/geolocation_proximity_views_handler_sort_distance.inc
