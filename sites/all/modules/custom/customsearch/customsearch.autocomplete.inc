@@ -52,4 +52,5 @@ function customsearch_search_autocomplete($string = '') {
   }
 
   drupal_json_output($autocomplete);
+//  drupal_exit();
 }

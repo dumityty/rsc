@@ -33,7 +33,7 @@ function cafes_add_cafe() {
 
   $add_cafe_form = node_add('cafes');
 	$output = array(
-    "#markup" => "<div class='kf-add-info'><p>You can submit new cafes here. They will be reviewed and published on the site. Please try to provide as much information as possible.</p><p></p></div>" . drupal_render($add_cafe_form),
+    "#markup" => "<div class='kf-add-info'><p>You can submit new cafes here. They will be reviewed and published on the site. Please try to provide as much information as possible.</p><p>If the cafe has a name then provide that, otherwise try and create a meaningful one, ie. Cafe on A414, A507 off the A1, etc.</p><p></p></div>" . drupal_render($add_cafe_form),
   );
 
   // $output = node_add('cafes');
@@ -53,12 +53,13 @@ function cafes_form_cafes_node_form_alter(&$form, &$form_state) {
 	// $form['title']['#title'] = 'Cafe name';
 	if (user_is_anonymous()) {
 		$form['field_kf_address']['#access'] = FALSE;
+		$form['field_kf_email']['#access'] = FALSE;
 	}
 
 	if (empty($form['field_kf_geolocation_maps']['und'][0]['lat']['#default_value']) && empty($form['field_kf_geolocation_maps']['und'][0]['lng']['#default_value'])) {
 		$user_location = ip_geoloc_get_visitor_location();
-  	$form['field_kf_geolocation_maps']['und'][0]['lat']['#default_value'] = $user_location['latitude'];
-		$form['field_kf_geolocation_maps']['und'][0]['lng']['#default_value'] = $user_location['longitude'];
+  	$form['field_kf_geolocation_maps']['und'][0]['lat']['#default_value'] = isset($user_location['latitude']) ? $user_location['latitude'] : NULL;
+		$form['field_kf_geolocation_maps']['und'][0]['lng']['#default_value'] = isset($user_location['longitude']) ? $user_location['longitude'] : NULL;
 	}
 
 }
@@ -128,16 +129,51 @@ function _cafes_get_google_address($address) {
 }
 
 function cafes_report_cafe($cafe_id) {
-	$cafe = node_load($cafe_id);
+//	$cafe = node_load($cafe_id);
 
-	$message = message_create('report');
+//	$report_form = drupal_get_form('webform_client_form_26');
 
-	$wrapper = entity_metadata_wrapper('message', $message);
-  $wrapper->field_message_cafe->set($cafe);
-  $wrapper->save();
+//	$message = message_create('report');
+//
+//	$wrapper = entity_metadata_wrapper('message', $message);
+//  $wrapper->field_message_cafe->set($cafe);
+//  $wrapper->save();
 
-	drupal_set_message('The cafe has been reported and the site administrator notified.');
-	drupal_goto('/');
+//	drupal_set_message('The cafe has been reported and the site administrator notified.');
+
+	drupal_goto('/report/cafe');
+//	return $report_form;
+}
+
+function cafes_form_webform_client_form_26_alter(&$form, &$form_state) {
+  if (isset($_GET['id'])) {
+    $cafe_id = check_plain($_GET['id']);
+  }
+  else {
+    drupal_set_message('A problem was encountered - the cafe you are trying to report cannot be loaded at this time. Please use the site contact form.');
+    drupal_goto('/');
+  }
+  $cafe = node_load($cafe_id);
+  if (!$cafe) {
+    drupal_set_message('A problem was encountered - the cafe you are trying to report cannot be loaded at this time. Please use the site contact form.');
+    drupal_goto('/');
+  }
+
+  $cafe_markup = "<p>You are about to report cafe <b>$cafe->title</b>: </p>";
+  $cafe_markup .= "<p>Address:";
+  if (!empty($cafe->field_kf_road_name)) {
+    $cafe_markup .= "<br>" . $cafe->field_kf_road_name[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($cafe->field_kf_address)) {
+    (isset($cafe->field_kf_address[LANGUAGE_NONE][0]['locality']) && !empty($cafe->field_kf_address[LANGUAGE_NONE][0]['locality'])) ? $cafe_markup .= "<br>" . $cafe->field_kf_address[LANGUAGE_NONE][0]['locality'] : NULL;
+    (isset($cafe->field_kf_address[LANGUAGE_NONE][0]['postal_code']) && !empty($cafe->field_kf_address[LANGUAGE_NONE][0]['postal_code'])) ? $cafe_markup .= "<br>" . $cafe->field_kf_address[LANGUAGE_NONE][0]['postal_code'] : NULL;
+  }
+  $cafe_markup .= "</p>";
+  $form['submitted']['cafe_description']['#markup'] = $cafe_markup;
+
+  // add cafe id to hidden form component
+  $form['submitted']['cafe_id']['#default_value'] = $cafe_id;
+
 }
 
 // alter the form submit

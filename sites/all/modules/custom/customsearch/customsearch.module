@@ -277,14 +277,15 @@ function customsearch_search($type, $search = '', $distance = '10') {
           </div>
           <div class='kf-road'>" . $cafe->field_field_kf_road_name[0]['raw']['value'] . "</div>
           <div class='kf-postcode'>" . $cafe->field_data_field_kf_address_field_kf_address_postal_code . "</div>
-          <div class='kf-meta'><a href='/report/" . $cafe->nid . "'>report</a></div>
+          <div class='kf-meta'><a href='/report/cafe?id=" . $cafe->nid . "'>report</a></div>
         </div>
       </div>",
+      "distance" => $distance_to_user,
     );
 
     $cafe_marker = new stdClass();
-    $cafe_marker->latitude = $kf_location['latitude'];
-    $cafe_marker->longitude = $kf_location['longitude'];
+    $cafe_marker->latitude = floatval($kf_location['latitude']);
+    $cafe_marker->longitude = floatval($kf_location['longitude']);
     $cafe_marker->balloon_text = $cafe->node_title;
     $cafe_marker->marker_color = 'red';
     $cafe_marker->id = $cafe->nid;
@@ -295,15 +296,36 @@ function customsearch_search($type, $search = '', $distance = '10') {
     $cafes[] = $cafe_markup;
   }
 
+  // Sort by distance closest to user.
+  uasort($cafes, 'sort_by_distance');
+
   // Create the map with the results.
   $map = array(
     "#markup" => ip_geoloc_output_map_multi_location($cafes_markers, 'ip-geoloc-map-multi-locations-cafes', '{"zoom":8}','height:300px','red','418E8E',6,array(0=>0),1),
   );
 
+
   // Depending of type of search have slightly different results text.
-  $plural = (count($cafes_markers) > 1) ? TRUE : FALSE;
+//  $broaden_search_form = "<form class='change-distance'>
+//<select name='miles' onchange=\"location.href = location.href + '/' + this.value;\">
+//  <option value='-'>-</option>
+//  <option value='10'>10</option>
+//  <option value='25'>25</option>
+//  <option value='50'>50</option>
+//</select>
+//<noscript><input type=\"submit\" value=\"Submit\"></noscript>
+//</form>";
+
+  if ($type == 'nearme') {
+    $distance_url = '/nearme';
+  }
+  else {
+    $distance_url = '/s/' . $search;
+  }
+
+  $plural = (count($cafes_markers) != 1) ? TRUE : FALSE;
   $results_info = array(
-    "#markup" => "<div class='search-info'>There " . ($plural ? "are" : "is") . "<b> " . count($cafes_markers) . "</b> cafe" . ($plural ? "s" : "") . " within <b>" . $distance_miles . "</b> miles of your current location (" . $user_location['locality'] . ").</div>",
+    "#markup" => "<div class='search-info'>There " . ($plural ? "are" : "is") . "<b> " . count($cafes_markers) . "</b> cafe" . ($plural ? "s" : "") . " within <b>" . $distance_miles . "</b> miles of your current location (" . $user_location['locality'] . "). Broaden or restrict your search to <a href='$distance_url/10'>10</a>, <a href='$distance_url/25'>25</a>, <a href='$distance_url/50'>50</a> miles.</div>",
   );
 
   // Put the map on top of the whole markup.
@@ -320,4 +342,11 @@ function customsearch_search($type, $search = '', $distance = '10') {
   // it would be nice to do this in the background??
 
   return $cafes;
+}
+
+/**
+ * uasort() callback to sort by distance closest to user.
+ */
+function sort_by_distance($a, $b) {
+  return $a['distance']>$b['distance'];
 }

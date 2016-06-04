@@ -78,6 +78,10 @@ header.navbar .menu .menu-text {
   margin-bottom: 5px;
 }
 
+.search-info form.change-distance{
+  display: inline-block;
+}
+
 .kf-box {
 	width: 600px;
   display: block;
@@ -166,7 +170,7 @@ header.navbar .menu .menu-text {
 }
 
 /**
- * ADD CAFFE
+ * ADD CAFE
  */
 
 .page-add-cafe form {
@@ -175,6 +179,10 @@ header.navbar .menu .menu-text {
 
 .page-add-cafe .form-group {
   margin-bottom: 30px;
+}
+
+.page-add-cafe .field-name-field-kf-address {
+  /*display: none;*/
 }
 
 @media (min-width: 768px) {
@@ -187,6 +195,13 @@ header.navbar .menu .menu-text {
 	overflow: hidden;
 }
 
+.page-add-cafe .field-name-field-kf-geolocation-maps .geolocation-lat-item,
+.page-add-cafe .field-name-field-kf-geolocation-maps .geolocation-lat,
+.page-add-cafe .field-name-field-kf-geolocation-maps .geolocation-lng-item,
+.page-add-cafe .field-name-field-kf-geolocation-maps .geolocation-lng,
+.page-add-cafe .field-name-field-kf-geolocation-maps .geolocation-remove {
+  display: none;
+}
 
 /* experimental */
 .page-add-cafe .form-item-field-kf-geolocation-maps-und-0-address-field input {
@@ -217,6 +232,8 @@ header.navbar .menu .menu-text {
 
 .page-add-cafe .geolocation-help {
   clear: both;
+  margin-top: 45px;
+  margin-bottom: 15px;
 }
 
 .page-add-cafe .form-actions {
