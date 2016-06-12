@@ -174,11 +174,27 @@ function cafes_form_webform_client_form_26_alter(&$form, &$form_state) {
   // add cafe id to hidden form component
   $form['submitted']['cafe_id']['#default_value'] = $cafe_id;
 
+	$form['#submit'][] = 'cafes_unpublish_cafe_on_report';
+
 }
 
-// alter the form submit
-// redirect user to homepage on submission
-// make the node unpublished by default
-// will need to trigger a rule with email
+function cafes_unpublish_cafe_on_report(&$form, &$form_state) {
+  if (isset($_GET['id'])) {
+    $cafe_id = check_plain($_GET['id']);
+  }
+  else {
+    drupal_set_message('A problem was encountered - the cafe you are trying to report cannot be loaded at this time. Please use the site contact form.');
+    drupal_goto('/');
+  }
+  $cafe = node_load($cafe_id);
+  if (!$cafe) {
+    drupal_set_message('A problem was encountered - the cafe you are trying to report cannot be loaded at this time. Please use the site contact form.');
+    drupal_goto('/');
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $cafe);
+  $wrapper->status->set(0);
+  $wrapper->save();
+}
 
 
