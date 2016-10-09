@@ -24,7 +24,7 @@ function rsc_search_default_search_api_index() {
     "item_type" : "node",
     "options" : {
       "datasource" : { "bundles" : [ "cafes" ] },
-      "index_directly" : 0,
+      "index_directly" : 1,
       "cron_limit" : "50",
       "fields" : {
         "changed" : { "type" : "date" },
