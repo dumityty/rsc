@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the RSC Cafes feature.
+ */
+
+include_once 'rsc_cafes.features.inc';

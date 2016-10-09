@@ -98,6 +98,24 @@ header.navbar .menu .menu-text {
   display: inline-block;
 }
 
+.view-search-solr .views-widget,
+.view-search-solr .views-operator {
+  display:inline-block;
+}
+
+.view-search-solr #edit-location-wrapper {
+  padding-right: 3px;
+}
+.view-search-solr .views-submit-button .form-submit {
+  margin-top: 0;
+  background-color: #300030;
+  border-color: transparent;
+
+}
+.view-search-solr .views-submit-button .form-submit:hover {
+  background-color: #C04848;
+}
+
 .kf-box {
 	/*width: 600px;*/
   width: 100%;
@@ -170,8 +188,13 @@ header.navbar .menu .menu-text {
   width: 100%;
 }
 
+.page-search-page form.search-form .form-item-search input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .page-search-page form.search-form button {
-  margin-top: -34px;
+  margin-top: -2px;
   background-color: #300030;
   border-color: transparent;
   border-top-left-radius: 0;

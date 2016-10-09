@@ -1,0 +1,13 @@
+diff --git a/plugins/location_input/geocoder.inc b/plugins/location_input/geocoder.inc
+index 8f3383b..35aecb8 100644
+--- a/plugins/location_input/geocoder.inc
++++ b/plugins/location_input/geocoder.inc
+@@ -63,7 +63,7 @@ function search_api_location_input_geocoder_form(array &$form_state, array $opti
+   }
+   $handler_id = $handler_id ? $handler_id : $options['geocoder_handler'];
+   if ($handler_id) {
+-    $processor = ctools_get_plugins('geocoder', 'geocoder_handler', $handler_id);
++    $processor = geocoder_get_handler($handler_id);
+   }
+
+   $handlers = array();

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the RSC Search feature.
+ */
+
+include_once 'rsc_search.features.inc';

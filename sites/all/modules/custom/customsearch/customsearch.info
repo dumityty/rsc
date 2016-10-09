@@ -2,3 +2,5 @@ name = Search
 description = Search.
 package = RSC
 core = 7.x
+
+files[] = includes/views_handler_distance_from_user_field.inc

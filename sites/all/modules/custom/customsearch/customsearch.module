@@ -77,8 +77,6 @@ function customsearch_search_page() {
 
   $output = array($banner, $search_form_markup);
 
-  // customsearch_search_autocomplete('sg');
-
   return $output;
 }
 
@@ -92,15 +90,18 @@ function customsearch_search_form($form, &$form_state) {
     '#attributes' => array(
       'placeholder' => 'Search... (A1, SG6, etc.)',
     ),
-    '#autocomplete_path' => 'search-autocomplete',
+    // hide autocomplete until i find a better way
+    // search autocomplete? https://www.drupal.org/project/search_autocomplete
+    // or typeahead.js
+    // or google maps autocomplete plugin
+    // maybe one of the geomap modules already has a way
+    // '#autocomplete_path' => 'search-autocomplete',
   );
 
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => '<span class="glyphicon glyphicon-search" aria-hidden="true"></span>',
   );
-
-  // dpm($form);
 
   return $form;
 }
@@ -115,9 +116,6 @@ function customsearch_search_form($form, &$form_state) {
  * @return [type]
  */
 function customsearch_search_form_submit($form, &$form_state) {
-  // dpm($form,'form');
-  // dpm($form_state,'form_state');
-
   drupal_goto('/s/' . $form_state['values']['search']);
 }
 
@@ -162,6 +160,18 @@ function customesearch_nearme($distance = '10') {
  *
  * Outputs the map with the results, and a list of results.
  *
+ * Types of searches
+ *  - nearme - simplest
+ *    - set the 'hidden' geolocation filter to my lat/lon point and set the distance (5 miles default)
+ *    - no need to set the normal geolocation filter as well (or the other wy around with the filters)
+ *  - search for location
+ *    - set the geolocation filter to the lat/lon of search point
+ *    - don't set the hidden geolocation filter
+ *  - search for location but restrict results to my area
+ *    - set the geolocation filter to the lat/lon of search point
+ *    - set the hidden geolocation filter to my coordinates to restrict to my area
+ *
+ *
  * @todo
  * handle no results
  *
@@ -171,6 +181,65 @@ function customesearch_nearme($distance = '10') {
  * @return [type]
  */
 function customsearch_search($type, $search = '', $distance = '10') {
+  $user_location = ip_geoloc_get_visitor_location();
+
+  $view = views_get_view('search_solr');
+  $view->set_display('page');
+
+  // If nearme page or search term is left empty.
+  if ( ($type == 'nearme') || empty($search) ) {
+    // 51.989598099999995,-0.2197335
+    if (isset($user_location['latitude']) && isset($user_location['longitude'])) {
+//      $exposed_filters = array(
+//        'nearme' => $user_location['latitude'] . ',' .  $user_location['longitude'],
+//        'nearme_distance' => $distance,
+//      );
+      $filters = $view->display_handler->get_option('filters');
+
+      $filters['field_kf_geolocation_maps_latlng_1']['operator'] = $distance;
+      $filters['field_kf_geolocation_maps_latlng_1']['value'] = $user_location['latitude'] . ',' .  $user_location['longitude'];
+      $view->display_handler->set_option('filters', $filters);
+    }
+    else {
+      // The user's location could not be found so can't search 'nearme'...
+      // Maybe redirect the user to the search page?
+      drupal_set_message(t('Your location could not be found. Why not try and search for a location?'), 'status', FALSE);
+      drupal_goto('/');
+    }
+  }
+  else {
+    $exposed_filters = array(
+      'location' => $search,
+      'location_distance' => $distance,
+    );
+    $view->set_exposed_input($exposed_filters);
+  }
+
+
+  $view->pre_execute();
+  $view->execute();
+  $result = $view->result;
+
+  $near = $view->preview('page');
+  return $near;
+}
+
+/**
+ * The main search functionality.
+ * Gets visitor location, determines whether a search by location or proximity,
+ * then set the exposed filters on the view and get the view result.
+ *
+ * Outputs the map with the results, and a list of results.
+ *
+ * @todo
+ * handle no results
+ *
+ * @param  [type]
+ * @param  string
+ * @param  string
+ * @return [type]
+ */
+function customsearch_search_nonsolr($type, $search = '', $distance = '10') {
   // Save the original distance in miles for use in info text.
   $distance_miles = $distance;
 
@@ -349,4 +418,37 @@ function customsearch_search($type, $search = '', $distance = '10') {
  */
 function sort_by_distance($a, $b) {
   return $a['distance']>$b['distance'];
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function customsearch_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Implements hook_views_data().
+ */
+function customsearch_views_data() {
+
+  $data['customsearch'] = array(
+    'table' => array(
+      'group' => t('Custom search module'),
+      'join' => array(
+        '#global' => array()
+      )
+    ),
+    'distance_from_user' => array(
+      'title' => t('Distance from user'),
+      'help' => t('Calculate distance from cafe to user.'),
+      'field' => array(
+        'handler' => 'views_handler_distance_from_user_field',
+      ),
+    ),
+  );
+
+  return $data;
 }
