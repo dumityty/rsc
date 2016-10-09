@@ -188,6 +188,7 @@ function customsearch_search($type, $search = '', $distance = '10') {
 
   // If nearme page or search term is left empty.
   if ( ($type == 'nearme') || empty($search) ) {
+    $distance = '10';
     // 51.989598099999995,-0.2197335
     if (isset($user_location['latitude']) && isset($user_location['longitude'])) {
 //      $exposed_filters = array(

@@ -207,7 +207,7 @@ function rsc_search_views_default_views() {
     'field_kf_geolocation_maps_lat' => 'field_kf_geolocation_maps_lat',
   );
   $handler->display->display_options['style_options']['ip_geoloc_views_plugin_longitude'] = 'field_kf_geolocation_maps_lng';
-  $handler->display->display_options['style_options']['center_option'] = '4';
+  $handler->display->display_options['style_options']['center_option'] = '6';
   $handler->display->display_options['style_options']['visitor_marker'] = '00FF00';
   $handler->display->display_options['style_options']['gps_roles'] = array(
     1 => '1',
