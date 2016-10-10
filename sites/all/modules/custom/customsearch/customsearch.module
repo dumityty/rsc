@@ -211,7 +211,7 @@ function customsearch_search($type, $search = '', $distance = '10') {
   else {
     $exposed_filters = array(
       'location' => $search,
-      'location_distance' => $distance,
+//      'location_distance' => $distance,
     );
     $view->set_exposed_input($exposed_filters);
   }
