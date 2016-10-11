@@ -41,6 +41,7 @@ function customsearch_menu() {
   );
 
   $items['search-page'] = array(
+    'type' => MENU_CALLBACK,
     'title' => 'Search',
     'description' => 'Search homepage.',
     'access callback' => TRUE,
